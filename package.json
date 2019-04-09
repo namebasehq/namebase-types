@@ -1,0 +1,14 @@
+{
+  "name": "namebase-types",
+  "version": "0.0.0",
+  "description": "Check types at runtime.",
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "node ./test/index.js"
+  },
+  "author": "Anthony Liu",
+  "license": "MIT",
+  "devDependencies": {
+    "cafezinho": "^1.0.0"
+  }
+}
