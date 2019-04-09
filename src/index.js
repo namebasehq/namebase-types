@@ -1,35 +1,38 @@
 const exceptions = require('./exceptions');
 
-function integer() {
+function INTEGER(x) {
+  if (typeof x !== 'number') {
+    throw new exceptions.InvalidType();
+  } else if (x !== Math.floor(x)) {
+    throw new exceptions.InvalidType();
+  } else {
+    return true;
+  }
+}
+
+function STRING(x) {
+  if (typeof x !== 'string') {
+    throw new exceptions.InvalidType();
+  } else {
+    return true;
+  }
+}
+
+function BOOLEAN(x) {
+  if (typeof x !== 'boolean') {
+    throw new exceptions.InvalidType();
+  } else {
+    return true;
+  }
+}
+
+function ENUM(...values) {
   return x => {
-    if (typeof x !== 'number') {
-      throw new exceptions.InvalidType();
-    } else if (x !== Math.floor(x)) {
-      throw new exceptions.InvalidType();
-    } else {
-      return true;
+    for (let i = 0; i < values.length; i++) {
+      if (x === values[i]) return true;
     }
+    throw new exceptions.NotInEnum(values);
   };
 }
 
-function string() {
-  return x => {
-    if (typeof x !== 'string') {
-      throw new exceptions.InvalidType();
-    } else {
-      return true;
-    }
-  };
-}
-
-function bool() {
-  return x => {
-    if (typeof x !== 'boolean') {
-      throw new exceptions.InvalidType();
-    } else {
-      return true;
-    }
-  };
-}
-
-module.exports = { integer, string, bool, exceptions };
+module.exports = { INTEGER, STRING, BOOLEAN, ENUM, exceptions };

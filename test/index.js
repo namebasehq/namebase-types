@@ -1,6 +1,6 @@
 const assert = require('assert');
 const { describe, it } = require('cafezinho');
-const { integer, string, bool } = require('../src/index');
+const { INTEGER, STRING, BOOLEAN, ENUM } = require('../src/index');
 
 function expectException(exceptionName, f) {
   try {
@@ -12,97 +12,133 @@ function expectException(exceptionName, f) {
 }
 
 describe('namebase-types', () => {
-  describe('integer()', () => {
+  describe('.INTEGER', () => {
     it('should pass negative integers', () => {
-      assert(integer()(-10));
+      assert(INTEGER(-10));
     });
 
     it('should pass zero', () => {
-      assert(integer()(0));
+      assert(INTEGER(0));
     });
 
     it('should pass positive integers', () => {
-      assert(integer()(101012013));
+      assert(INTEGER(101012013));
     });
 
     it('should fail floats', () => {
-      expectException('InvalidType', () => integer()(-1013.31));
+      expectException('InvalidType', () => INTEGER(-1013.31));
     });
 
     it('should fail strings', () => {
-      expectException('InvalidType', () => integer()('hello'));
+      expectException('InvalidType', () => INTEGER('hello'));
     });
 
     it('should fail booleans', () => {
-      expectException('InvalidType', () => integer()(true));
+      expectException('InvalidType', () => INTEGER(true));
     });
 
     it('should fail undefined', () => {
-      expectException('InvalidType', () => integer()(undefined));
+      expectException('InvalidType', () => INTEGER(undefined));
     });
 
     it('should fail null', () => {
-      expectException('InvalidType', () => integer()(null));
+      expectException('InvalidType', () => INTEGER(null));
     });
   });
 
-  describe('string()', () => {
+  describe('.STRING', () => {
     it('should pass nonempty strings', () => {
-      assert(string()('hello'));
+      assert(STRING('hello'));
     });
 
     it('should pass the empty string', () => {
-      assert(string()(''));
+      assert(STRING(''));
     });
 
     it('should fail integers', () => {
-      expectException('InvalidType', () => string()(10));
+      expectException('InvalidType', () => STRING(10));
     });
 
     it('should fail booleans', () => {
-      expectException('InvalidType', () => string()(false));
+      expectException('InvalidType', () => STRING(false));
     });
 
     it('should fail undefined', () => {
-      expectException('InvalidType', () => string()(undefined));
+      expectException('InvalidType', () => STRING(undefined));
     });
 
     it('should fail null', () => {
-      expectException('InvalidType', () => string()(null));
+      expectException('InvalidType', () => STRING(null));
     });
   });
 
-  describe('bool()', () => {
+  describe('.BOOLEAN', () => {
     it('should pass true', () => {
-      assert(bool()(true));
+      assert(BOOLEAN(true));
     });
 
     it('should pass false', () => {
-      assert(bool()(false));
+      assert(BOOLEAN(false));
     });
 
     it('should fail positive integers', () => {
-      expectException('InvalidType', () => bool()(10));
+      expectException('InvalidType', () => BOOLEAN(10));
     });
 
     it('should fail zero', () => {
-      expectException('InvalidType', () => bool()(0));
+      expectException('InvalidType', () => BOOLEAN(0));
     });
 
     it('should fail strings', () => {
-      expectException('InvalidType', () => bool()('hello'));
+      expectException('InvalidType', () => BOOLEAN('hello'));
     });
 
     it('should fail empty strings', () => {
-      expectException('InvalidType', () => bool()(''));
+      expectException('InvalidType', () => BOOLEAN(''));
     });
 
     it('should fail undefined', () => {
-      expectException('InvalidType', () => bool()(undefined));
+      expectException('InvalidType', () => BOOLEAN(undefined));
     });
 
     it('should fail null', () => {
-      expectException('InvalidType', () => bool()(null));
+      expectException('InvalidType', () => BOOLEAN(null));
+    });
+  });
+
+  describe('.ENUM(values)', () => {
+    it('should pass an integer for an int enum', () => {
+      const check = ENUM(10, 20, 30);
+      assert(check(30));
+    });
+
+    it('should pass a string for a string enum', () => {
+      const check = ENUM('hello', 'goodbye', 'dice');
+      assert(check('goodbye'));
+    });
+
+    it('should pass a boolean in a mixed enum', () => {
+      const check = ENUM('string cheese', false);
+      assert(check(false));
+    });
+
+    it('should pass null when the enum allows it', () => {
+      const check = ENUM('string cheese', false, null);
+      assert(check(null));
+    });
+
+    it('should fail when the value is missing with the right error', () => {
+      try {
+        const check = ENUM('string cheese', false, 501);
+        check('what');
+        assert(false);
+      } catch (e) {
+        if (e.name !== 'NotInEnum') throw e;
+        if (e.values.length !== 3) throw e;
+        if (e.values[0] !== 'string cheese') throw e;
+        if (e.values[1] !== false) throw e;
+        if (e.values[2] !== 501) throw e;
+      }
     });
   });
 });

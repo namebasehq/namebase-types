@@ -10,4 +10,18 @@ class InvalidType extends Error {
   }
 }
 
-module.exports = { InvalidType };
+class NotInEnum extends InvalidType {
+  constructor(values, key = null) {
+    const message = `is not in enum(${values.join(',')})`;
+    if (key) {
+      super(`Key ${key} ${message}.`);
+    } else {
+      super(`Value ${message}.`);
+    }
+    this.name = 'NotInEnum';
+    this.values = values;
+    this.key = key;
+  }
+}
+
+module.exports = { InvalidType, NotInEnum };
