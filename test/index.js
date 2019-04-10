@@ -1,13 +1,14 @@
 const assert = require('assert');
 const { describe, it } = require('cafezinho');
-const { INTEGER, STRING, BOOLEAN, ENUM } = require('../src/index');
+const { INTEGER, STRING, BOOLEAN, ENUM, OBJECT } = require('../src/index');
 
-function expectException(exceptionName, f) {
+function expectException(f, exceptionName, key = null) {
   try {
     f();
     assert(false);
   } catch (e) {
     if (e.name !== exceptionName) throw e;
+    if (e.key !== key) throw e;
   }
 }
 
@@ -26,23 +27,23 @@ describe('namebase-types', () => {
     });
 
     it('should fail floats', () => {
-      expectException('InvalidType', () => INTEGER(-1013.31));
+      expectException(() => INTEGER(-1013.31), 'InvalidType');
     });
 
     it('should fail strings', () => {
-      expectException('InvalidType', () => INTEGER('hello'));
+      expectException(() => INTEGER('hello'), 'InvalidType');
     });
 
     it('should fail booleans', () => {
-      expectException('InvalidType', () => INTEGER(true));
+      expectException(() => INTEGER(true), 'InvalidType');
     });
 
     it('should fail undefined', () => {
-      expectException('InvalidType', () => INTEGER(undefined));
+      expectException(() => INTEGER(undefined), 'InvalidType');
     });
 
     it('should fail null', () => {
-      expectException('InvalidType', () => INTEGER(null));
+      expectException(() => INTEGER(null), 'InvalidType');
     });
   });
 
@@ -56,19 +57,19 @@ describe('namebase-types', () => {
     });
 
     it('should fail integers', () => {
-      expectException('InvalidType', () => STRING(10));
+      expectException(() => STRING(10), 'InvalidType');
     });
 
     it('should fail booleans', () => {
-      expectException('InvalidType', () => STRING(false));
+      expectException(() => STRING(false), 'InvalidType');
     });
 
     it('should fail undefined', () => {
-      expectException('InvalidType', () => STRING(undefined));
+      expectException(() => STRING(undefined), 'InvalidType');
     });
 
     it('should fail null', () => {
-      expectException('InvalidType', () => STRING(null));
+      expectException(() => STRING(null), 'InvalidType');
     });
   });
 
@@ -82,27 +83,27 @@ describe('namebase-types', () => {
     });
 
     it('should fail positive integers', () => {
-      expectException('InvalidType', () => BOOLEAN(10));
+      expectException(() => BOOLEAN(10), 'InvalidType');
     });
 
     it('should fail zero', () => {
-      expectException('InvalidType', () => BOOLEAN(0));
+      expectException(() => BOOLEAN(0), 'InvalidType');
     });
 
     it('should fail strings', () => {
-      expectException('InvalidType', () => BOOLEAN('hello'));
+      expectException(() => BOOLEAN('hello'), 'InvalidType');
     });
 
     it('should fail empty strings', () => {
-      expectException('InvalidType', () => BOOLEAN(''));
+      expectException(() => BOOLEAN(''), 'InvalidType');
     });
 
     it('should fail undefined', () => {
-      expectException('InvalidType', () => BOOLEAN(undefined));
+      expectException(() => BOOLEAN(undefined), 'InvalidType');
     });
 
     it('should fail null', () => {
-      expectException('InvalidType', () => BOOLEAN(null));
+      expectException(() => BOOLEAN(null), 'InvalidType');
     });
   });
 
@@ -139,6 +140,147 @@ describe('namebase-types', () => {
         if (e.values[1] !== false) throw e;
         if (e.values[2] !== 501) throw e;
       }
+    });
+  });
+
+  describe('.OBJECT(template)', () => {
+    it('should pass a simple template with mixed types', () => {
+      const check = OBJECT({
+        a: STRING,
+        b: INTEGER,
+        c: BOOLEAN,
+        d: ENUM(100, 200, 300),
+      });
+      assert(check({ a: 'hello', b: 10, c: true, d: 200 }));
+    });
+
+    it('should pass a deeply nested template', () => {
+      const check = OBJECT({
+        a: INTEGER,
+        b: OBJECT({
+          c: INTEGER,
+          d: OBJECT({
+            e: INTEGER,
+          }),
+        }),
+      });
+      assert(
+        check({
+          a: 10,
+          b: {
+            c: 11,
+            d: {
+              e: 12,
+            },
+          },
+        })
+      );
+    });
+
+    it('should fail a simple template with the right keys but wrong types', () => {
+      const check = OBJECT({
+        a: STRING,
+        b: INTEGER,
+      });
+      expectException(
+        () => {
+          check({ a: 'hello', b: 'goodbye' });
+        },
+        'InvalidType',
+        'b'
+      );
+    });
+
+    it('should fail a simple template with a missing key', () => {
+      const check = OBJECT({
+        a: STRING,
+        b: INTEGER,
+      });
+      expectException(
+        () => {
+          check({ a: 'hello' });
+        },
+        'MissingKey',
+        'b'
+      );
+    });
+
+    it('should fail a simple template with an extra key', () => {
+      const check = OBJECT({
+        a: STRING,
+        b: INTEGER,
+      });
+      expectException(
+        () => {
+          check({ a: 'hello', b: 10, c: true });
+        },
+        'ExtraKey',
+        'c'
+      );
+    });
+
+    it('should report missing keys before extra keys', () => {
+      const check = OBJECT({
+        a: STRING,
+        b: INTEGER,
+      });
+      expectException(
+        () => {
+          check({ a: 'hello', c: true });
+        },
+        'MissingKey',
+        'b'
+      );
+    });
+
+    it('should check nested objects for object-ness', () => {
+      const check = OBJECT({
+        a: INTEGER,
+        b: OBJECT({
+          c: INTEGER,
+          d: OBJECT({
+            e: INTEGER,
+          }),
+        }),
+      });
+      expectException(
+        () => {
+          check({
+            a: 10,
+            b: {
+              c: 11,
+              d: false,
+            },
+          });
+        },
+        'InvalidType',
+        'd'
+      );
+    });
+
+    it('should fail nested missing keys', () => {
+      const check = OBJECT({
+        a: INTEGER,
+        b: OBJECT({
+          c: INTEGER,
+          d: OBJECT({
+            e: INTEGER,
+          }),
+        }),
+      });
+      expectException(
+        () => {
+          check({
+            a: 10,
+            b: {
+              c: 11,
+              d: {},
+            },
+          });
+        },
+        'MissingKey',
+        'e'
+      );
     });
   });
 });

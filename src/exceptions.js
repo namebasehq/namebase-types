@@ -10,7 +10,7 @@ class InvalidType extends Error {
   }
 }
 
-class NotInEnum extends InvalidType {
+class NotInEnum extends Error {
   constructor(values, key = null) {
     const message = `is not in enum(${values.join(',')})`;
     if (key) {
@@ -24,4 +24,20 @@ class NotInEnum extends InvalidType {
   }
 }
 
-module.exports = { InvalidType, NotInEnum };
+class MissingKey extends Error {
+  constructor(key = null) {
+    super(`Key ${key} is missing.`);
+    this.name = 'MissingKey';
+    this.key = key;
+  }
+}
+
+class ExtraKey extends Error {
+  constructor(key = null) {
+    super(`Key ${key} was present but should not have been included.`);
+    this.name = 'ExtraKey';
+    this.key = key;
+  }
+}
+
+module.exports = { InvalidType, NotInEnum, MissingKey, ExtraKey };
