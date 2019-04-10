@@ -1,6 +1,16 @@
 const assert = require('assert');
 const { describe, it } = require('cafezinho');
-const { INTEGER, STRING, BOOLEAN, ENUM, OBJECT, OR, OPTIONAL } = require('../src/index');
+const {
+  INTEGER,
+  INTEGER_STRING,
+  STRING,
+  BOOLEAN,
+  BOOLEAN_STRING,
+  ENUM,
+  OBJECT,
+  OR,
+  OPTIONAL,
+} = require('../src/index');
 
 function expectException(f, exceptionName, key = null) {
   try {
@@ -44,6 +54,48 @@ describe('namebase-types', () => {
 
     it('should fail null', () => {
       expectException(() => INTEGER(null), 'InvalidType');
+    });
+  });
+
+  describe('.INTEGER_STRING', () => {
+    it('should pass negative integer strings', () => {
+      assert(INTEGER_STRING('-10') === -10);
+    });
+
+    it('should pass zero strings', () => {
+      assert(INTEGER_STRING('0') === 0);
+    });
+
+    it('should pass positive integer strings', () => {
+      assert(INTEGER_STRING('101012013') === 101012013);
+    });
+
+    it('should fail actual integers', () => {
+      expectException(() => INTEGER_STRING(1000), 'InvalidType');
+    });
+
+    it('should fail float strings', () => {
+      expectException(() => INTEGER_STRING('-1013.31'), 'InvalidType');
+    });
+
+    it('should fail strings', () => {
+      expectException(() => INTEGER_STRING('hello'), 'InvalidType');
+    });
+
+    it('should fail booleans', () => {
+      expectException(() => INTEGER_STRING(true), 'InvalidType');
+    });
+
+    it('should fail string booleans', () => {
+      expectException(() => INTEGER_STRING('true'), 'InvalidType');
+    });
+
+    it('should fail undefined', () => {
+      expectException(() => INTEGER_STRING(undefined), 'InvalidType');
+    });
+
+    it('should fail null', () => {
+      expectException(() => INTEGER_STRING(null), 'InvalidType');
     });
   });
 
@@ -104,6 +156,36 @@ describe('namebase-types', () => {
 
     it('should fail null', () => {
       expectException(() => BOOLEAN(null), 'InvalidType');
+    });
+  });
+
+  describe('.BOOLEAN_STRING', () => {
+    it('should pass true strings', () => {
+      assert(BOOLEAN_STRING('true') === true);
+    });
+
+    it('should pass false strings', () => {
+      assert(BOOLEAN_STRING('false') === false);
+    });
+
+    it('should fail integers', () => {
+      expectException(() => BOOLEAN_STRING(1000), 'InvalidType');
+    });
+
+    it('should fail actual booleans', () => {
+      expectException(() => BOOLEAN_STRING(false), 'InvalidType');
+    });
+
+    it('should fail strings', () => {
+      expectException(() => BOOLEAN_STRING('hello'), 'InvalidType');
+    });
+
+    it('should fail undefined', () => {
+      expectException(() => BOOLEAN_STRING(undefined), 'InvalidType');
+    });
+
+    it('should fail null', () => {
+      expectException(() => BOOLEAN_STRING(null), 'InvalidType');
     });
   });
 

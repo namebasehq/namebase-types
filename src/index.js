@@ -10,6 +10,18 @@ function INTEGER(x) {
   }
 }
 
+function INTEGER_STRING(x) {
+  if (typeof x !== 'string') {
+    throw new exceptions.InvalidType(this.key);
+  } else if (isNaN(x)) {
+    throw new exceptions.InvalidType(this.key);
+  } else if (parseInt(x) !== parseFloat(x)) {
+    throw new exceptions.InvalidType(this.key);
+  } else {
+    return parseInt(x);
+  }
+}
+
 function STRING(x) {
   if (typeof x !== 'string') {
     throw new exceptions.InvalidType(this.key);
@@ -23,6 +35,16 @@ function BOOLEAN(x) {
     throw new exceptions.InvalidType(this.key);
   } else {
     return x;
+  }
+}
+
+function BOOLEAN_STRING(x) {
+  if (x === 'true') {
+    return true;
+  } else if (x === 'false') {
+    return false;
+  } else {
+    throw new exceptions.InvalidType(this.key);
   }
 }
 
@@ -111,8 +133,10 @@ function OPTIONAL(f) {
 
 module.exports = {
   INTEGER,
+  INTEGER_STRING,
   STRING,
   BOOLEAN,
+  BOOLEAN_STRING,
   ENUM,
   OBJECT,
   OR,
