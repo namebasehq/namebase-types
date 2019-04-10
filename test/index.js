@@ -1,6 +1,6 @@
 const assert = require('assert');
 const { describe, it } = require('cafezinho');
-const { INTEGER, STRING, BOOLEAN, ENUM, OBJECT, OR } = require('../src/index');
+const { INTEGER, STRING, BOOLEAN, ENUM, OBJECT, OR, OPTIONAL } = require('../src/index');
 
 function expectException(f, exceptionName, key = null) {
   try {
@@ -157,6 +157,20 @@ describe('namebase-types', () => {
       assert(parsedX.b === 10);
       assert(parsedX.c === true);
       assert(parsedX.d === 200);
+    });
+
+    it('should pass a simple template with optional keys', () => {
+      const parse = OBJECT({
+        a: STRING,
+        b: OPTIONAL(INTEGER),
+      });
+      const parsedX = parse({ a: 'hello', b: 10 });
+      const parsedY = parse({ a: 'hello' });
+      assert(Object.keys(parsedX).length === 2);
+      assert(parsedX.a === 'hello');
+      assert(parsedX.b === 10);
+      assert(Object.keys(parsedY).length === 1);
+      assert(parsedX.a === 'hello');
     });
 
     it('should pass a deeply nested template', () => {

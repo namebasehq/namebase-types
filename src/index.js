@@ -49,6 +49,8 @@ function OBJECT(template) {
       try {
         if (x.hasOwnProperty(key)) {
           parsedX[key] = template[key].call({ key }, x[key]);
+        } else if (template[key].OPTIONAL === true) {
+          // do nothing, this key is optional!
         } else {
           throw new exceptions.MissingKey(key);
         }
@@ -99,4 +101,21 @@ function OR(...options) {
   };
 }
 
-module.exports = { INTEGER, STRING, BOOLEAN, ENUM, OBJECT, OR, exceptions };
+function OPTIONAL(f) {
+  const g = function(...args) {
+    return f.apply(this, args);
+  };
+  g.OPTIONAL = true;
+  return g;
+}
+
+module.exports = {
+  INTEGER,
+  STRING,
+  BOOLEAN,
+  ENUM,
+  OBJECT,
+  OR,
+  OPTIONAL,
+  exceptions,
+};
