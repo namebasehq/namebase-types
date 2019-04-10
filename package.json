@@ -1,6 +1,6 @@
 {
   "name": "namebase-types",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Check types at runtime.",
   "main": "./src/index.js",
   "scripts": {
