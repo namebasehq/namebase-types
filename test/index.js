@@ -15,15 +15,15 @@ function expectException(f, exceptionName, key = null) {
 describe('namebase-types', () => {
   describe('.INTEGER', () => {
     it('should pass negative integers', () => {
-      assert(INTEGER(-10));
+      assert(INTEGER(-10) === -10);
     });
 
     it('should pass zero', () => {
-      assert(INTEGER(0));
+      assert(INTEGER(0) === 0);
     });
 
     it('should pass positive integers', () => {
-      assert(INTEGER(101012013));
+      assert(INTEGER(101012013) === 101012013);
     });
 
     it('should fail floats', () => {
@@ -49,11 +49,11 @@ describe('namebase-types', () => {
 
   describe('.STRING', () => {
     it('should pass nonempty strings', () => {
-      assert(STRING('hello'));
+      assert(STRING('hello') === 'hello');
     });
 
     it('should pass the empty string', () => {
-      assert(STRING(''));
+      assert(STRING('') === '');
     });
 
     it('should fail integers', () => {
@@ -75,11 +75,11 @@ describe('namebase-types', () => {
 
   describe('.BOOLEAN', () => {
     it('should pass true', () => {
-      assert(BOOLEAN(true));
+      assert(BOOLEAN(true) === true);
     });
 
     it('should pass false', () => {
-      assert(BOOLEAN(false));
+      assert(BOOLEAN(false) === false);
     });
 
     it('should fail positive integers', () => {
@@ -109,29 +109,29 @@ describe('namebase-types', () => {
 
   describe('.ENUM(...values)', () => {
     it('should pass an integer for an int enum', () => {
-      const check = ENUM(10, 20, 30);
-      assert(check(30));
+      const parse = ENUM(10, 20, 30);
+      assert(parse(30) === 30);
     });
 
     it('should pass a string for a string enum', () => {
-      const check = ENUM('hello', 'goodbye', 'dice');
-      assert(check('goodbye'));
+      const parse = ENUM('hello', 'goodbye', 'dice');
+      assert(parse('goodbye') === 'goodbye');
     });
 
     it('should pass a boolean in a mixed enum', () => {
-      const check = ENUM('string cheese', false);
-      assert(check(false));
+      const parse = ENUM('string cheese', false);
+      assert(parse(false) === false);
     });
 
     it('should pass null when the enum allows it', () => {
-      const check = ENUM('string cheese', false, null);
-      assert(check(null));
+      const parse = ENUM('string cheese', false, null);
+      assert(parse(null) === null);
     });
 
     it('should fail when the value is missing with the right error', () => {
       try {
-        const check = ENUM('string cheese', false, 501);
-        check('what');
+        const parse = ENUM('string cheese', false, 501);
+        parse('what');
         assert(false);
       } catch (e) {
         if (e.name !== 'NotInEnum') throw e;
@@ -145,17 +145,22 @@ describe('namebase-types', () => {
 
   describe('.OBJECT(template)', () => {
     it('should pass a simple template with mixed types', () => {
-      const check = OBJECT({
+      const parse = OBJECT({
         a: STRING,
         b: INTEGER,
         c: BOOLEAN,
         d: ENUM(100, 200, 300),
       });
-      assert(check({ a: 'hello', b: 10, c: true, d: 200 }));
+      const parsedX = parse({ a: 'hello', b: 10, c: true, d: 200 });
+      assert(Object.keys(parsedX).length === 4);
+      assert(parsedX.a === 'hello');
+      assert(parsedX.b === 10);
+      assert(parsedX.c === true);
+      assert(parsedX.d === 200);
     });
 
     it('should pass a deeply nested template', () => {
-      const check = OBJECT({
+      const parse = OBJECT({
         a: INTEGER,
         b: OBJECT({
           c: INTEGER,
@@ -164,27 +169,31 @@ describe('namebase-types', () => {
           }),
         }),
       });
-      assert(
-        check({
-          a: 10,
-          b: {
-            c: 11,
-            d: {
-              e: 12,
-            },
+      const parsedX = parse({
+        a: 10,
+        b: {
+          c: 11,
+          d: {
+            e: 12,
           },
-        })
-      );
+        },
+      });
+      assert(Object.keys(parsedX).length === 2);
+      assert(parsedX.a === 10);
+      assert(Object.keys(parsedX.b).length === 2);
+      assert(parsedX.b.c === 11);
+      assert(Object.keys(parsedX.b.d).length === 1);
+      assert(parsedX.b.d.e === 12);
     });
 
     it('should fail a simple template with the right keys but wrong types', () => {
-      const check = OBJECT({
+      const parse = OBJECT({
         a: STRING,
         b: INTEGER,
       });
       expectException(
         () => {
-          check({ a: 'hello', b: 'goodbye' });
+          parse({ a: 'hello', b: 'goodbye' });
         },
         'InvalidType',
         'b'
@@ -192,13 +201,13 @@ describe('namebase-types', () => {
     });
 
     it('should fail a simple template with a missing key', () => {
-      const check = OBJECT({
+      const parse = OBJECT({
         a: STRING,
         b: INTEGER,
       });
       expectException(
         () => {
-          check({ a: 'hello' });
+          parse({ a: 'hello' });
         },
         'MissingKey',
         'b'
@@ -206,13 +215,13 @@ describe('namebase-types', () => {
     });
 
     it('should fail a simple template with an extra key', () => {
-      const check = OBJECT({
+      const parse = OBJECT({
         a: STRING,
         b: INTEGER,
       });
       expectException(
         () => {
-          check({ a: 'hello', b: 10, c: true });
+          parse({ a: 'hello', b: 10, c: true });
         },
         'ExtraKey',
         'c'
@@ -220,13 +229,13 @@ describe('namebase-types', () => {
     });
 
     it('should report missing keys before extra keys', () => {
-      const check = OBJECT({
+      const parse = OBJECT({
         a: STRING,
         b: INTEGER,
       });
       expectException(
         () => {
-          check({ a: 'hello', c: true });
+          parse({ a: 'hello', c: true });
         },
         'MissingKey',
         'b'
@@ -234,7 +243,7 @@ describe('namebase-types', () => {
     });
 
     it('should check nested objects for object-ness', () => {
-      const check = OBJECT({
+      const parse = OBJECT({
         a: INTEGER,
         b: OBJECT({
           c: INTEGER,
@@ -245,7 +254,7 @@ describe('namebase-types', () => {
       });
       expectException(
         () => {
-          check({
+          parse({
             a: 10,
             b: {
               c: 11,
@@ -259,7 +268,7 @@ describe('namebase-types', () => {
     });
 
     it('should fail nested missing keys', () => {
-      const check = OBJECT({
+      const parse = OBJECT({
         a: INTEGER,
         b: OBJECT({
           c: INTEGER,
@@ -270,7 +279,7 @@ describe('namebase-types', () => {
       });
       expectException(
         () => {
-          check({
+          parse({
             a: 10,
             b: {
               c: 11,
@@ -286,16 +295,22 @@ describe('namebase-types', () => {
 
   describe('.OR(...options)', () => {
     it('should pass primitive ORs', () => {
-      assert(OR(STRING, INTEGER)(100));
-      assert(OR(STRING, BOOLEAN)(false));
-      assert(OR(ENUM(100, 200, 300), STRING)(200));
-      assert(OR(ENUM(100, 200, 300), STRING)(''));
+      assert(OR(STRING, INTEGER)(100) === 100);
+      assert(OR(STRING, BOOLEAN)(false) === false);
+      assert(OR(ENUM(100, 200, 300), STRING)(200) === 200);
+      assert(OR(ENUM(100, 200, 300), STRING)('') === '');
     });
 
     it('should pass object ORs', () => {
-      const check = OR(OBJECT({ a: STRING }), OBJECT({ b: INTEGER }));
-      assert(check({ a: 'hey' }));
-      assert(check({ b: 20 }));
+      const parse = OR(OBJECT({ a: STRING }), OBJECT({ b: INTEGER }));
+
+      const parsedX = parse({ a: 'hey' });
+      assert(Object.keys(parsedX).length === 1);
+      assert(parsedX.a === 'hey');
+
+      const parsedY = parse({ b: 20 });
+      assert(Object.keys(parsedY).length === 1);
+      assert(parsedY.b === 20);
     });
 
     it('should fail primitive ORs', () => {
@@ -303,21 +318,21 @@ describe('namebase-types', () => {
     });
 
     it('should fail and report missing keys before extra keys', () => {
-      const check = OR(
+      const parse = OR(
         OBJECT({ a: STRING, b: STRING, d: STRING }),
         OBJECT({ a: STRING, c: STRING })
       );
       const value = { a: 'hello', b: 'goodbye' };
-      expectException(() => check(value), 'MissingKey', 'd');
+      expectException(() => parse(value), 'MissingKey', 'd');
     });
 
     it('should fail and report invalid types before extra keys', () => {
-      const check = OR(
+      const parse = OR(
         OBJECT({ a: STRING, b: STRING }),
         OBJECT({ a: STRING, b: STRING, c: STRING })
       );
       const value = { a: 'hello', b: 100, d: 'goodbye' };
-      expectException(() => check(value), 'InvalidType', 'b');
+      expectException(() => parse(value), 'InvalidType', 'b');
     });
   });
 });

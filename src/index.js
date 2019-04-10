@@ -6,7 +6,7 @@ function INTEGER(x) {
   } else if (x !== Math.floor(x)) {
     throw new exceptions.InvalidType(this.key);
   } else {
-    return true;
+    return x;
   }
 }
 
@@ -14,7 +14,7 @@ function STRING(x) {
   if (typeof x !== 'string') {
     throw new exceptions.InvalidType(this.key);
   } else {
-    return true;
+    return x;
   }
 }
 
@@ -22,14 +22,14 @@ function BOOLEAN(x) {
   if (typeof x !== 'boolean') {
     throw new exceptions.InvalidType(this.key);
   } else {
-    return true;
+    return x;
   }
 }
 
 function ENUM(...values) {
   return function(x) {
     for (let i = 0; i < values.length; i++) {
-      if (x === values[i]) return true;
+      if (x === values[i]) return x;
     }
     throw new exceptions.NotInEnum(values, this.key);
   };
@@ -44,10 +44,11 @@ function OBJECT(template) {
 
     // check for the missing/invalid keys
     const errors = [];
+    const parsedX = {};
     Object.keys(template).forEach(key => {
       try {
         if (x.hasOwnProperty(key)) {
-          template[key].call({ key }, x[key]);
+          parsedX[key] = template[key].call({ key }, x[key]);
         } else {
           throw new exceptions.MissingKey(key);
         }
@@ -66,7 +67,7 @@ function OBJECT(template) {
     }
 
     if (errors.length === 0) {
-      return true;
+      return parsedX;
     } else {
       throw errors[0]; // throw the first error
     }
@@ -79,7 +80,7 @@ function OR(...options) {
     for (let i = 0; i < options.length; i++) {
       const option = options[i];
       try {
-        if (option.call({ key: this.key }, x)) return true;
+        return option.call({ key: this.key }, x);
       } catch (e) {
         errors.push(e);
       }

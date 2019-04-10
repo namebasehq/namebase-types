@@ -14,7 +14,7 @@ const {
   exceptions,
 } = require('namebase-types');
 
-const checker = OR(
+const parser = OR(
   OBJECT({
     a: STRING,
     b: INTEGER,
@@ -27,24 +27,26 @@ const checker = OR(
   }),
 )
 
-// returns true
-checker({ a: "foo", b: 4 })
-checker({ a: "foo", b: 4, c: true, d: 20 })
+// returns { a: "foo", b: 4 }
+parser({ a: "foo", b: 4 })
+
+// returns { a: "foo", b: 4, c: true, d: 20 }
+parser({ a: "foo", b: 4, c: true, d: 20 })
 
 // throws exceptions.InvalidType({ key: "a" })
-checker({ a: false, b: 4, c: true, d: 20 })
+parser({ a: false, b: 4, c: true, d: 20 })
 
 // throws exceptions.MissingKey({ key: "b" })
-checker({ a: "foo", c: true, d: 10 })
+parser({ a: "foo", c: true, d: 10 })
 
 // throws exceptions.MissingKey({ key: "c" })
-checker({ a: "foo", b: 4, d: 10 })
+parser({ a: "foo", b: 4, d: 10 })
 
 // throws exceptions.ExtraKey({ key: "e" })
-checker({ a: "foo", b: 4, c: true, d: 10, e: "bar" })
+parser({ a: "foo", b: 4, c: true, d: 10, e: "bar" })
 ```
 
-Check the tests for more details.
+Check the tests for more details. Note: instead of passing in the built-in primitives (STRING, INTEGER, BOOLEAN, ENUM, OBJECT), you can pass in any parsing function that returns its parsed input on success (and throws otherwise).
 
 ## License
 
