@@ -42,9 +42,8 @@ function OBJECT(template) {
       throw new exceptions.InvalidType(this.key);
     }
 
-    const errors = [];
-
     // check for the missing/invalid keys
+    const errors = [];
     Object.keys(template).forEach(key => {
       try {
         if (x.hasOwnProperty(key)) {
@@ -74,4 +73,29 @@ function OBJECT(template) {
   };
 }
 
-module.exports = { INTEGER, STRING, BOOLEAN, ENUM, OBJECT, exceptions };
+function OR(...options) {
+  return function(x) {
+    const errors = [];
+    for (let i = 0; i < options.length; i++) {
+      const option = options[i];
+      try {
+        if (option.call({ key: this.key }, x)) return true;
+      } catch (e) {
+        errors.push(e);
+      }
+    }
+
+    if (errors.length > 0) {
+      // everything errored, find the highest priority error to report
+      errors.sort((a, b) => {
+        return (a.priority || 0) - (b.priority || 0);
+      });
+      throw errors[0];
+    } else {
+      // there were no options passed in
+      throw new exceptions.InvalidType(this.key);
+    }
+  };
+}
+
+module.exports = { INTEGER, STRING, BOOLEAN, ENUM, OBJECT, OR, exceptions };

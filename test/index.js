@@ -1,6 +1,6 @@
 const assert = require('assert');
 const { describe, it } = require('cafezinho');
-const { INTEGER, STRING, BOOLEAN, ENUM, OBJECT } = require('../src/index');
+const { INTEGER, STRING, BOOLEAN, ENUM, OBJECT, OR } = require('../src/index');
 
 function expectException(f, exceptionName, key = null) {
   try {
@@ -107,7 +107,7 @@ describe('namebase-types', () => {
     });
   });
 
-  describe('.ENUM(values)', () => {
+  describe('.ENUM(...values)', () => {
     it('should pass an integer for an int enum', () => {
       const check = ENUM(10, 20, 30);
       assert(check(30));
@@ -281,6 +281,43 @@ describe('namebase-types', () => {
         'MissingKey',
         'e'
       );
+    });
+  });
+
+  describe('.OR(...options)', () => {
+    it('should pass primitive ORs', () => {
+      assert(OR(STRING, INTEGER)(100));
+      assert(OR(STRING, BOOLEAN)(false));
+      assert(OR(ENUM(100, 200, 300), STRING)(200));
+      assert(OR(ENUM(100, 200, 300), STRING)(''));
+    });
+
+    it('should pass object ORs', () => {
+      const check = OR(OBJECT({ a: STRING }), OBJECT({ b: INTEGER }));
+      assert(check({ a: 'hey' }));
+      assert(check({ b: 20 }));
+    });
+
+    it('should fail primitive ORs', () => {
+      expectException(() => OR(STRING, INTEGER)(true), 'InvalidType');
+    });
+
+    it('should fail and report missing keys before extra keys', () => {
+      const check = OR(
+        OBJECT({ a: STRING, b: STRING, d: STRING }),
+        OBJECT({ a: STRING, c: STRING })
+      );
+      const value = { a: 'hello', b: 'goodbye' };
+      expectException(() => check(value), 'MissingKey', 'd');
+    });
+
+    it('should fail and report invalid types before extra keys', () => {
+      const check = OR(
+        OBJECT({ a: STRING, b: STRING }),
+        OBJECT({ a: STRING, b: STRING, c: STRING })
+      );
+      const value = { a: 'hello', b: 100, d: 'goodbye' };
+      expectException(() => check(value), 'InvalidType', 'b');
     });
   });
 });

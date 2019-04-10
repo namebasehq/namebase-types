@@ -5,7 +5,9 @@ class InvalidType extends Error {
     } else {
       super(`This value has an invalid type.`);
     }
+
     this.name = 'InvalidType';
+    this.priority = 2;
     this.key = key;
   }
 }
@@ -18,7 +20,9 @@ class NotInEnum extends Error {
     } else {
       super(`Value ${message}.`);
     }
+
     this.name = 'NotInEnum';
+    this.priority = 3;
     this.values = values;
     this.key = key;
   }
@@ -27,7 +31,9 @@ class NotInEnum extends Error {
 class MissingKey extends Error {
   constructor(key = null) {
     super(`Key ${key} is missing.`);
+
     this.name = 'MissingKey';
+    this.priority = 4;
     this.key = key;
   }
 }
@@ -35,7 +41,9 @@ class MissingKey extends Error {
 class ExtraKey extends Error {
   constructor(key = null) {
     super(`Key ${key} was present but should not have been included.`);
+
     this.name = 'ExtraKey';
+    this.priority = 1;
     this.key = key;
   }
 }
