@@ -466,8 +466,35 @@ describe('namebase-types', () => {
       assert(result[1].b === value[1].b);
     });
 
+    it('should pass correctly nested arrays', () => {
+      const type = ARRAY(STRING);
+      const value = [['one one', 'one two'], []];
+      const result = ARRAY(type)(value);
+
+      assert(typeof result === 'object');
+      assert(result.constructor === Array);
+      assert(result.length === 2);
+
+      assert(typeof result[0] === 'object');
+      assert(result[0].constructor === Array);
+      assert(result[0].length === 2);
+      assert(result[0][0] === 'one one');
+      assert(result[0][1] === 'one two');
+
+      assert(typeof result[1] === 'object');
+      assert(result[1].constructor === Array);
+      assert(result[1].length === 0);
+    });
+
+
     it('should fail on arrays of mixed types', () => {
       expectException(() => ARRAY(STRING)(['one', 2]), 'InvalidArrayElement');
+    });
+
+    it('should fail improperly nested arrays', () => {
+      const type = ARRAY(STRING);
+      const value = [['one one'], [2]];
+      expectException(() => ARRAY(type)(value), 'InvalidArrayElement');
     });
 
     it('should fail strings', () => {

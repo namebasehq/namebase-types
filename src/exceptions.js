@@ -53,7 +53,7 @@ class InvalidArrayElement extends Error {
     if (key) {
       super(`Invalid type at ${key}[${index}]: ${nestedError}`);
     } else {
-      super(`Invalid type at index ${index}: ${nestedError}`);
+      super(`Invalid type at [${index}]: ${nestedError}`);
     }
 
     this.name = 'InvalidArrayElement';
