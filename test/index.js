@@ -1,16 +1,16 @@
 const assert = require('assert');
 const { describe, it } = require('cafezinho');
 const {
-  INTEGER,
-  INTEGER_STRING,
-  STRING,
+  ARRAY,
   BOOLEAN,
   BOOLEAN_STRING,
   ENUM,
+  INTEGER,
+  INTEGER_STRING,
   OBJECT,
-  OR,
   OPTIONAL,
-  ARRAY,
+  OR,
+  STRING,
 } = require('../src/index');
 
 function expectException(f, exceptionName, key = null) {

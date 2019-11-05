@@ -131,15 +131,37 @@ function OPTIONAL(f) {
   return g;
 }
 
+function ARRAY(f) {
+  return function(x) {
+    // to start, ensure that x is an array
+    if (typeof x !== 'object' || x === null || x.constructor !== Array) {
+      throw new exceptions.InvalidType(this.key);
+    }
+
+    const values = [];
+    for (let i = 0; i < x.length; i++) {
+      try {
+        const value = f.call({ key: this.key }, x[i]);
+        values.push(value);
+      } catch (e) {
+        throw new exceptions.InvalidArrayElement(i, e.message, this.key);
+      }
+    }
+
+    return values;
+  };
+}
+
 module.exports = {
-  INTEGER,
-  INTEGER_STRING,
-  STRING,
+  ARRAY,
   BOOLEAN,
   BOOLEAN_STRING,
   ENUM,
+  INTEGER,
+  INTEGER_STRING,
   OBJECT,
-  OR,
   OPTIONAL,
+  OR,
+  STRING,
   exceptions,
 };

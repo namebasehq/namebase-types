@@ -48,4 +48,24 @@ class ExtraKey extends Error {
   }
 }
 
-module.exports = { InvalidType, NotInEnum, MissingKey, ExtraKey };
+class InvalidArrayElement extends Error {
+  constructor(index, nestedError, key = null) {
+    if (key) {
+      super(`Invalid type at ${key}[${index}]: ${nestedError}`);
+    } else {
+      super(`Invalid type at index ${index}: ${nestedError}`);
+    }
+
+    this.name = 'InvalidArrayElement';
+    this.priority = 5;
+    this.key = key;
+  }
+}
+
+module.exports = {
+  ExtraKey,
+  InvalidArrayElement,
+  InvalidType,
+  MissingKey,
+  NotInEnum,
+};
