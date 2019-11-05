@@ -10,6 +10,7 @@ const {
   OBJECT,
   OR,
   OPTIONAL,
+  ARRAY,
 } = require('../src/index');
 
 function expectException(f, exceptionName, key = null) {
@@ -429,6 +430,56 @@ describe('namebase-types', () => {
       );
       const value = { a: 'hello', b: 100, d: 'goodbye' };
       expectException(() => parse(value), 'InvalidType', 'b');
+    });
+  });
+
+  describe('.ARRAY(type)', () => {
+    it('should pass empty arrays', () => {
+      const result = ARRAY(STRING)([]);
+      assert(typeof result === 'object');
+      assert(result.constructor === Array);
+      assert(result.length === 0);
+    });
+
+    it('should pass simple arrays', () => {
+      const result = ARRAY(STRING)(['one', 'two', 'three']);
+      assert(typeof result === 'object');
+      assert(result.constructor === Array);
+      assert(result.length === 3);
+      assert(result[0] === 'one');
+      assert(result[1] === 'two');
+      assert(result[2] === 'three');
+    });
+
+    it('should pass complex arrays of objects', () => {
+      const type = OBJECT({ a: STRING, b: INTEGER });
+      const value = [{ a: 'one', b: 1 }, { a: 'two', b: 2}];
+      const result = ARRAY(type)(value);
+      assert(typeof result === 'object');
+      assert(result.constructor === Array);
+      assert(result.length === 2);
+      assert(typeof result[0] === 'object');
+      assert(typeof result[1] === 'object');
+      assert(result[0].a === value[0].a);
+      assert(result[0].b === value[0].b);
+      assert(result[1].a === value[1].a);
+      assert(result[1].b === value[1].b);
+    });
+
+    it('should fail on arrays of mixed types', () => {
+      expectException(() => ARRAY(STRING)(['one', 2]), 'InvalidArrayElement');
+    });
+
+    it('should fail strings', () => {
+      expectException(() => ARRAY(STRING)('hello'), 'InvalidType');
+    });
+
+    it('should fail undefined', () => {
+      expectException(() => ARRAY(STRING)(undefined), 'InvalidType');
+    });
+
+    it('should fail null', () => {
+      expectException(() => ARRAY(STRING)(null), 'InvalidType');
     });
   });
 });
