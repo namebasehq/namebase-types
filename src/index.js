@@ -57,7 +57,7 @@ function ENUM(...values) {
   };
 }
 
-function OBJECT(template) {
+function OBJECT(template, throwOnExtraKeys = true) {
   return function(x) {
     // make sure x is even an object
     if (!x || x.constructor !== Object) {
@@ -81,13 +81,15 @@ function OBJECT(template) {
       }
     });
 
-    // check for extra keys
-    const keysInTemplate = new Set(Object.keys(template));
-    const extraKeys = Object.keys(x).filter(key => {
-      return !keysInTemplate.has(key);
-    });
-    if (extraKeys.length > 0) {
-      errors.push(new exceptions.ExtraKey(extraKeys[0])); // the first extra
+    if (throwOnExtraKeys) {
+      // check for extra keys
+      const keysInTemplate = new Set(Object.keys(template));
+      const extraKeys = Object.keys(x).filter(key => {
+        return !keysInTemplate.has(key);
+      });
+      if (extraKeys.length > 0) {
+        errors.push(new exceptions.ExtraKey(extraKeys[0])); // the first extra
+      }
     }
 
     if (errors.length === 0) {
@@ -96,6 +98,11 @@ function OBJECT(template) {
       throw errors[0]; // throw the first error
     }
   };
+}
+
+function INEXACT_OBJECT(template) {
+  const throwOnExtraKeys = false;
+  return OBJECT(template, throwOnExtraKeys);
 }
 
 function OR(...options) {
@@ -157,6 +164,7 @@ module.exports = {
   BOOLEAN,
   BOOLEAN_STRING,
   ENUM,
+  INEXACT_OBJECT,
   INTEGER,
   INTEGER_STRING,
   OBJECT,
