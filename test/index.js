@@ -10,7 +10,7 @@ const {
   OBJECT,
   OPTIONAL,
   OR,
-  PARTIAL_OBJECT,
+  INEXACT_OBJECT,
   STRING,
 } = require('../src/index');
 
@@ -245,9 +245,9 @@ describe('namebase-types', () => {
     });
   });
 
-  // Tests shared with OBJECT and PARTIAL_OBJECT
-  describe('.OBJECT(template) and .PARTIAL_OBJECT(template)', () => {
-    [OBJECT, PARTIAL_OBJECT].forEach(PRIMITIVE => {
+  // Tests shared with OBJECT and INEXACT_OBJECT
+  describe('.OBJECT(template) and .INEXACT_OBJECT(template)', () => {
+    [OBJECT, INEXACT_OBJECT].forEach(PRIMITIVE => {
       it(`${PRIMITIVE.name}: should pass a simple, exact template with mixed types`, () => {
         const parse = PRIMITIVE({
           a: STRING,
@@ -398,8 +398,8 @@ describe('namebase-types', () => {
     });
   });
 
-  // Tests specific to PARTIAL_OBJECT
-  describe('.PARTIAL_OBJECT(template)', () => {
+  // Tests specific to INEXACT_OBJECT
+  describe('.INEXACT_OBJECT(template)', () => {
     it('should pass a simple, inexact template with mixed types', () => {
       const parse = PRIMITIVE({
         a: STRING,
