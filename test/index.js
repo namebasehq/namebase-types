@@ -5,12 +5,12 @@ const {
   BOOLEAN,
   BOOLEAN_STRING,
   ENUM,
+  INEXACT_OBJECT,
   INTEGER,
   INTEGER_STRING,
   OBJECT,
   OPTIONAL,
   OR,
-  INEXACT_OBJECT,
   STRING,
 } = require('../src/index');
 
@@ -401,7 +401,7 @@ describe('namebase-types', () => {
   // Tests specific to INEXACT_OBJECT
   describe('.INEXACT_OBJECT(template)', () => {
     it('should pass a simple, inexact template with mixed types', () => {
-      const parse = PRIMITIVE({
+      const parse = INEXACT_OBJECT({
         a: STRING,
         b: INTEGER,
         c: BOOLEAN,
@@ -416,7 +416,7 @@ describe('namebase-types', () => {
     });
 
     it('should pass a simple, inexact template with optional keys', () => {
-      const parse = PRIMITIVE({
+      const parse = INEXACT_OBJECT({
         a: STRING,
         b: OPTIONAL(INTEGER),
       });
@@ -430,13 +430,13 @@ describe('namebase-types', () => {
     });
 
     it('should fail a simple, inexact template with wrong optional type', () => {
-      const parse = PRIMITIVE({
+      const parse = INEXACT_OBJECT({
         a: STRING,
         b: OPTIONAL(INTEGER),
       });
       expectException(
         () => {
-          parse({ a: 'hello', b: 'there' });
+          parse({ a: 'hello', b: 'there', c: 'extra' });
         },
         'InvalidType',
         'b'
