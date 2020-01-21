@@ -399,8 +399,49 @@ describe('namebase-types', () => {
   });
 
   // Tests specific to PARTIAL_OBJECT
-  describe(`.PARTIAL_OBJECT(template)`, () => {
-    // TODO
+  describe('.PARTIAL_OBJECT(template)', () => {
+    it('should pass a simple, inexact template with mixed types', () => {
+      const parse = PRIMITIVE({
+        a: STRING,
+        b: INTEGER,
+        c: BOOLEAN,
+        d: ENUM(100, 200, 300),
+      });
+      const parsedX = parse({ a: 'hello', b: 10, c: true, d: 200, e: 'extra' });
+      assert(Object.keys(parsedX).length === 4);
+      assert(parsedX.a === 'hello');
+      assert(parsedX.b === 10);
+      assert(parsedX.c === true);
+      assert(parsedX.d === 200);
+    });
+
+    it('should pass a simple, inexact template with optional keys', () => {
+      const parse = PRIMITIVE({
+        a: STRING,
+        b: OPTIONAL(INTEGER),
+      });
+      const parsedX = parse({ a: 'hello', b: 10, c: 'extra' });
+      const parsedY = parse({ a: 'hello', c: 'extra' });
+      assert(Object.keys(parsedX).length === 2);
+      assert(parsedX.a === 'hello');
+      assert(parsedX.b === 10);
+      assert(Object.keys(parsedY).length === 1);
+      assert(parsedX.a === 'hello');
+    });
+
+    it('should fail a simple, inexact template with wrong optional type', () => {
+      const parse = PRIMITIVE({
+        a: STRING,
+        b: OPTIONAL(INTEGER),
+      });
+      expectException(
+        () => {
+          parse({ a: 'hello', b: 'there' });
+        },
+        'InvalidType',
+        'b'
+      );
+    });
   });
 
   describe('.OR(...options)', () => {
