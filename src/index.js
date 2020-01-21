@@ -98,6 +98,12 @@ function OBJECT(template) {
   };
 }
 
+function PARTIAL_OBJECT(template) {
+  return function(x) {
+    throw new exceptions.InvalidType('ROOT');
+  };
+}
+
 function OR(...options) {
   return function(x) {
     const errors = [];
@@ -162,6 +168,7 @@ module.exports = {
   OBJECT,
   OPTIONAL,
   OR,
+  PARTIAL_OBJECT,
   STRING,
   exceptions,
 };

@@ -10,6 +10,7 @@ const {
   OBJECT,
   OPTIONAL,
   OR,
+  PARTIAL_OBJECT,
   STRING,
 } = require('../src/index');
 
@@ -226,91 +227,9 @@ describe('namebase-types', () => {
     });
   });
 
+
+  // Tests specific to OBJECT
   describe('.OBJECT(template)', () => {
-    it('should pass a simple template with mixed types', () => {
-      const parse = OBJECT({
-        a: STRING,
-        b: INTEGER,
-        c: BOOLEAN,
-        d: ENUM(100, 200, 300),
-      });
-      const parsedX = parse({ a: 'hello', b: 10, c: true, d: 200 });
-      assert(Object.keys(parsedX).length === 4);
-      assert(parsedX.a === 'hello');
-      assert(parsedX.b === 10);
-      assert(parsedX.c === true);
-      assert(parsedX.d === 200);
-    });
-
-    it('should pass a simple template with optional keys', () => {
-      const parse = OBJECT({
-        a: STRING,
-        b: OPTIONAL(INTEGER),
-      });
-      const parsedX = parse({ a: 'hello', b: 10 });
-      const parsedY = parse({ a: 'hello' });
-      assert(Object.keys(parsedX).length === 2);
-      assert(parsedX.a === 'hello');
-      assert(parsedX.b === 10);
-      assert(Object.keys(parsedY).length === 1);
-      assert(parsedX.a === 'hello');
-    });
-
-    it('should pass a deeply nested template', () => {
-      const parse = OBJECT({
-        a: INTEGER,
-        b: OBJECT({
-          c: INTEGER,
-          d: OBJECT({
-            e: INTEGER,
-          }),
-        }),
-      });
-      const parsedX = parse({
-        a: 10,
-        b: {
-          c: 11,
-          d: {
-            e: 12,
-          },
-        },
-      });
-      assert(Object.keys(parsedX).length === 2);
-      assert(parsedX.a === 10);
-      assert(Object.keys(parsedX.b).length === 2);
-      assert(parsedX.b.c === 11);
-      assert(Object.keys(parsedX.b.d).length === 1);
-      assert(parsedX.b.d.e === 12);
-    });
-
-    it('should fail a simple template with the right keys but wrong types', () => {
-      const parse = OBJECT({
-        a: STRING,
-        b: INTEGER,
-      });
-      expectException(
-        () => {
-          parse({ a: 'hello', b: 'goodbye' });
-        },
-        'InvalidType',
-        'b'
-      );
-    });
-
-    it('should fail a simple template with a missing key', () => {
-      const parse = OBJECT({
-        a: STRING,
-        b: INTEGER,
-      });
-      expectException(
-        () => {
-          parse({ a: 'hello' });
-        },
-        'MissingKey',
-        'b'
-      );
-    });
-
     it('should fail a simple template with an extra key', () => {
       const parse = OBJECT({
         a: STRING,
@@ -324,70 +243,164 @@ describe('namebase-types', () => {
         'c'
       );
     });
+  });
 
-    it('should report missing keys before extra keys', () => {
-      const parse = OBJECT({
-        a: STRING,
-        b: INTEGER,
+  // Tests shared with OBJECT and PARTIAL_OBJECT
+  describe('.OBJECT(template) and .PARTIAL_OBJECT(template)', () => {
+    [OBJECT, PARTIAL_OBJECT].forEach(PRIMITIVE => {
+      it(`${PRIMITIVE.name}: should pass a simple, exact template with mixed types`, () => {
+        const parse = PRIMITIVE({
+          a: STRING,
+          b: INTEGER,
+          c: BOOLEAN,
+          d: ENUM(100, 200, 300),
+        });
+        const parsedX = parse({ a: 'hello', b: 10, c: true, d: 200 });
+        assert(Object.keys(parsedX).length === 4);
+        assert(parsedX.a === 'hello');
+        assert(parsedX.b === 10);
+        assert(parsedX.c === true);
+        assert(parsedX.d === 200);
       });
-      expectException(
-        () => {
-          parse({ a: 'hello', c: true });
-        },
-        'MissingKey',
-        'b'
-      );
-    });
 
-    it('should check nested objects for object-ness', () => {
-      const parse = OBJECT({
-        a: INTEGER,
-        b: OBJECT({
-          c: INTEGER,
-          d: OBJECT({
-            e: INTEGER,
+      it(`${PRIMITIVE.name}: should pass a simple, exact template with optional keys`, () => {
+        const parse = PRIMITIVE({
+          a: STRING,
+          b: OPTIONAL(INTEGER),
+        });
+        const parsedX = parse({ a: 'hello', b: 10 });
+        const parsedY = parse({ a: 'hello' });
+        assert(Object.keys(parsedX).length === 2);
+        assert(parsedX.a === 'hello');
+        assert(parsedX.b === 10);
+        assert(Object.keys(parsedY).length === 1);
+        assert(parsedX.a === 'hello');
+      });
+
+      it(`${PRIMITIVE.name}: should pass a deeply nested, exact template`, () => {
+        const parse = PRIMITIVE({
+          a: INTEGER,
+          b: PRIMITIVE({
+            c: INTEGER,
+            d: PRIMITIVE({
+              e: INTEGER,
+            }),
           }),
-        }),
-      });
-      expectException(
-        () => {
-          parse({
-            a: 10,
-            b: {
-              c: 11,
-              d: false,
+        });
+        const parsedX = parse({
+          a: 10,
+          b: {
+            c: 11,
+            d: {
+              e: 12,
             },
-          });
-        },
-        'InvalidType',
-        'd'
-      );
-    });
+          },
+        });
+        assert(Object.keys(parsedX).length === 2);
+        assert(parsedX.a === 10);
+        assert(Object.keys(parsedX.b).length === 2);
+        assert(parsedX.b.c === 11);
+        assert(Object.keys(parsedX.b.d).length === 1);
+        assert(parsedX.b.d.e === 12);
+      });
 
-    it('should fail nested missing keys', () => {
-      const parse = OBJECT({
-        a: INTEGER,
-        b: OBJECT({
-          c: INTEGER,
-          d: OBJECT({
-            e: INTEGER,
-          }),
-        }),
+      it(`${PRIMITIVE.name}: should fail a simple, exact template with the right keys but wrong types`, () => {
+        const parse = PRIMITIVE({
+          a: STRING,
+          b: INTEGER,
+        });
+        expectException(
+          () => {
+            parse({ a: 'hello', b: 'goodbye' });
+          },
+          'InvalidType',
+          'b'
+        );
       });
-      expectException(
-        () => {
-          parse({
-            a: 10,
-            b: {
-              c: 11,
-              d: {},
-            },
-          });
-        },
-        'MissingKey',
-        'e'
-      );
+
+      it(`${PRIMITIVE.name}: should fail a simple, exact template with a missing key`, () => {
+        const parse = PRIMITIVE({
+          a: STRING,
+          b: INTEGER,
+        });
+        expectException(
+          () => {
+            parse({ a: 'hello' });
+          },
+          'MissingKey',
+          'b'
+        );
+      });
+
+      it(`${PRIMITIVE.name}: should report missing keys before extra keys`, () => {
+        const parse = PRIMITIVE({
+          a: STRING,
+          b: INTEGER,
+        });
+        expectException(
+          () => {
+            parse({ a: 'hello', c: true });
+          },
+          'MissingKey',
+          'b'
+        );
+      });
+
+      it(`${PRIMITIVE.name}: should check nested objects for object-ness`, () => {
+        const parse = PRIMITIVE({
+          a: INTEGER,
+          b: PRIMITIVE({
+            c: INTEGER,
+            d: PRIMITIVE({
+              e: INTEGER,
+            }),
+          }),
+        });
+        expectException(
+          () => {
+            parse({
+              a: 10,
+              b: {
+                c: 11,
+                d: false,
+              },
+            });
+          },
+          'InvalidType',
+          'd'
+        );
+      });
+
+      it(`${PRIMITIVE.name}: should fail nested missing keys`, () => {
+        const parse = PRIMITIVE({
+          a: INTEGER,
+          b: PRIMITIVE({
+            c: INTEGER,
+            d: PRIMITIVE({
+              e: INTEGER,
+            }),
+          }),
+        });
+        expectException(
+          () => {
+            parse({
+              a: 10,
+              b: {
+                c: 11,
+                d: {},
+              },
+            });
+          },
+          'MissingKey',
+          'e'
+        );
+      });
     });
+  });
+
+  // Tests specific to PARTIAL_OBJECT
+  describe(`.PARTIAL_OBJECT(template)`, () => {
+    // TODO
   });
 
   describe('.OR(...options)', () => {
