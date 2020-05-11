@@ -8,6 +8,7 @@ const {
   INEXACT_OBJECT,
   INTEGER,
   INTEGER_STRING,
+  NUMERIC,
   OBJECT,
   OPTIONAL,
   OR,
@@ -98,6 +99,44 @@ describe('namebase-types', () => {
 
     it('should fail null', () => {
       expectException(() => INTEGER_STRING(null), 'InvalidType');
+    });
+  });
+
+  describe('.NUMERIC', () => {
+    it('should pass negative integers', () => {
+      assert(NUMERIC(-10) === -10);
+    });
+
+    it('should pass zero', () => {
+      assert(NUMERIC(0) === 0);
+    });
+
+    it('should pass positive integers', () => {
+      assert(NUMERIC(101012013) === 101012013);
+    });
+
+    it('should pass floats', () => {
+      assert(NUMERIC(10.123) === 10.123);
+    });
+
+    it('should pass negative floats', () => {
+      assert(NUMERIC(-10.123) === -10.123);
+    });
+
+    it('should fail strings', () => {
+      expectException(() => NUMERIC('hello'), 'InvalidType');
+    });
+
+    it('should fail booleans', () => {
+      expectException(() => NUMERIC(true), 'InvalidType');
+    });
+
+    it('should fail undefined', () => {
+      expectException(() => NUMERIC(undefined), 'InvalidType');
+    });
+
+    it('should fail null', () => {
+      expectException(() => NUMERIC(null), 'InvalidType');
     });
   });
 
@@ -227,7 +266,6 @@ describe('namebase-types', () => {
     });
   });
 
-
   // Tests specific to OBJECT
   describe('.OBJECT(template)', () => {
     it('should fail a simple template with an extra key', () => {
@@ -247,7 +285,7 @@ describe('namebase-types', () => {
 
   // Tests shared with OBJECT and INEXACT_OBJECT
   describe('.OBJECT(template) and .INEXACT_OBJECT(template)', () => {
-    [OBJECT, INEXACT_OBJECT].forEach(PRIMITIVE => {
+    [OBJECT, INEXACT_OBJECT].forEach((PRIMITIVE) => {
       it(`${PRIMITIVE.name}: should pass a simple, exact template with mixed types`, () => {
         const parse = PRIMITIVE({
           a: STRING,
@@ -507,7 +545,10 @@ describe('namebase-types', () => {
 
     it('should pass complex arrays of objects', () => {
       const type = OBJECT({ a: STRING, b: INTEGER });
-      const value = [{ a: 'one', b: 1 }, { a: 'two', b: 2}];
+      const value = [
+        { a: 'one', b: 1 },
+        { a: 'two', b: 2 },
+      ];
       const result = ARRAY(type)(value);
       assert(typeof result === 'object');
       assert(result.constructor === Array);
@@ -539,7 +580,6 @@ describe('namebase-types', () => {
       assert(result[1].constructor === Array);
       assert(result[1].length === 0);
     });
-
 
     it('should fail on arrays of mixed types', () => {
       expectException(() => ARRAY(STRING)(['one', 2]), 'InvalidArrayElement');

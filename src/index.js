@@ -22,6 +22,14 @@ function INTEGER_STRING(x) {
   }
 }
 
+function NUMERIC(x) {
+  if (typeof x !== 'number') {
+    throw new exceptions.InvalidType(this.key);
+  } else {
+    return x;
+  }
+}
+
 function STRING(x) {
   if (typeof x !== 'string') {
     throw new exceptions.InvalidType(this.key);
@@ -49,7 +57,7 @@ function BOOLEAN_STRING(x) {
 }
 
 function ENUM(...values) {
-  return function(x) {
+  return function (x) {
     for (let i = 0; i < values.length; i++) {
       if (x === values[i]) return x;
     }
@@ -58,7 +66,7 @@ function ENUM(...values) {
 }
 
 function OBJECT(template, throwOnExtraKeys = true) {
-  return function(x) {
+  return function (x) {
     // make sure x is even an object
     if (!x || x.constructor !== Object) {
       throw new exceptions.InvalidType(this.key);
@@ -67,7 +75,7 @@ function OBJECT(template, throwOnExtraKeys = true) {
     // check for the missing/invalid keys
     const errors = [];
     const parsedX = {};
-    Object.keys(template).forEach(key => {
+    Object.keys(template).forEach((key) => {
       try {
         if (x.hasOwnProperty(key)) {
           parsedX[key] = template[key].call({ key }, x[key]);
@@ -84,7 +92,7 @@ function OBJECT(template, throwOnExtraKeys = true) {
     if (throwOnExtraKeys) {
       // check for extra keys
       const keysInTemplate = new Set(Object.keys(template));
-      const extraKeys = Object.keys(x).filter(key => {
+      const extraKeys = Object.keys(x).filter((key) => {
         return !keysInTemplate.has(key);
       });
       if (extraKeys.length > 0) {
@@ -106,7 +114,7 @@ function INEXACT_OBJECT(template) {
 }
 
 function OR(...options) {
-  return function(x) {
+  return function (x) {
     const errors = [];
     for (let i = 0; i < options.length; i++) {
       const option = options[i];
@@ -131,7 +139,7 @@ function OR(...options) {
 }
 
 function OPTIONAL(f) {
-  const g = function(...args) {
+  const g = function (...args) {
     return f.apply(this, args);
   };
   g.OPTIONAL = true;
@@ -139,7 +147,7 @@ function OPTIONAL(f) {
 }
 
 function ARRAY(f) {
-  return function(x) {
+  return function (x) {
     // to start, ensure that x is an array
     if (typeof x !== 'object' || x === null || x.constructor !== Array) {
       throw new exceptions.InvalidType(this.key);
@@ -167,6 +175,7 @@ module.exports = {
   INEXACT_OBJECT,
   INTEGER,
   INTEGER_STRING,
+  NUMERIC,
   OBJECT,
   OPTIONAL,
   OR,
