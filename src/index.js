@@ -167,6 +167,18 @@ function ARRAY(f) {
   };
 }
 
+const compose = (f, g) => (...args) => f(g(...args));
+
+function TYPED_DEFAULT(TYPE, defaultValue) {
+  return compose(TYPE, x => {
+    if (x === null || x === undefined) {
+      return defaultValue;
+    }
+
+    return x;
+  });
+}
+
 module.exports = {
   ARRAY,
   BOOLEAN,
@@ -180,5 +192,6 @@ module.exports = {
   OPTIONAL,
   OR,
   STRING,
+  TYPED_DEFAULT,
   exceptions,
 };
