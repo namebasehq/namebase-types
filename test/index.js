@@ -13,6 +13,7 @@ const {
   OPTIONAL,
   OR,
   STRING,
+  TYPED_DEFAULT,
 } = require('../src/index');
 
 function expectException(f, exceptionName, key = null) {
@@ -601,6 +602,23 @@ describe('namebase-types', () => {
 
     it('should fail null', () => {
       expectException(() => ARRAY(STRING)(null), 'InvalidType');
+    });
+  });
+
+  describe('.TYPED_DEFAULT(TYPE, value)', () => {
+    it('should pass correctly provided values', () => {
+      const result = TYPED_DEFAULT(STRING, '')('test');
+      assert(result === 'test');
+    });
+
+    it('should pass default when value is null', () => {
+      const result = TYPED_DEFAULT(STRING, '')(null);
+      assert(result === '');
+    });
+
+    it('should pass default when value is undefined', () => {
+      const result = TYPED_DEFAULT(STRING, '')(undefined);
+      assert(result === '');
     });
   });
 });

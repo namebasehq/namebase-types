@@ -172,7 +172,7 @@ const compose = (f, g) => (...args) => f(g(...args));
 function TYPED_DEFAULT(TYPE, defaultValue) {
   return compose(TYPE, x => {
     if (x === null || x === undefined) {
-      return defaultvalue;
+      return defaultValue;
     }
 
     return x;
