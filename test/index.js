@@ -620,5 +620,15 @@ describe('namebase-types', () => {
       const result = TYPED_DEFAULT(STRING, '')(undefined);
       assert(result === '');
     });
+
+    it('should fail passing wrong type', () => {
+      const parse = TYPED_DEFAULT(STRING, '');
+      expectException(() => parse(0), 'InvalidType');
+    });
+
+    it('should fail passing wrong default type', () => {
+      const parse = TYPED_DEFAULT(STRING, 0);
+      expectException(() => parse(), 'InvalidType');
+    });
   });
 });
