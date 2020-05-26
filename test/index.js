@@ -616,6 +616,11 @@ describe('namebase-types', () => {
       assert(result === '');
     });
 
+    it('should pass correctly provided values when in object', () => {
+      const result = OBJECT({input: TYPED_DEFAULT(STRING, 'test')})({});
+      assert(result.input === 'test');
+    });
+
     it('should pass default when value is undefined', () => {
       const result = TYPED_DEFAULT(STRING, '')(undefined);
       assert(result === '');
