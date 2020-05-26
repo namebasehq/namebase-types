@@ -81,6 +81,8 @@ function OBJECT(template, throwOnExtraKeys = true) {
           parsedX[key] = template[key].call({ key }, x[key]);
         } else if (template[key].OPTIONAL === true) {
           // do nothing, this key is optional!
+        } else if (template[key].TYPED_DEFAULT === true) {
+          parsedX[key] = template[key]();
         } else {
           throw new exceptions.MissingKey(key);
         }
@@ -170,13 +172,15 @@ function ARRAY(f) {
 const compose = (f, g) => (...args) => f(g(...args));
 
 function TYPED_DEFAULT(TYPE, defaultValue) {
-  return compose(TYPE, x => {
+  const g = compose(TYPE, x => {
     if (x === null || x === undefined) {
       return defaultValue;
     }
 
     return x;
   });
+  g.TYPED_DEFAULT = true;
+  return g;
 }
 
 module.exports = {
