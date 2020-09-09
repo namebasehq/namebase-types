@@ -169,7 +169,11 @@ function ARRAY(f) {
   };
 }
 
-const compose = (f, g) => (...args) => f(g(...args));
+const compose = (f, g) => {
+  return function(...args) {
+    return f.call({ key: this.key }, g(...args));
+  };
+};
 
 function TYPED_DEFAULT(TYPE, defaultValue) {
   const g = compose(TYPE, x => {

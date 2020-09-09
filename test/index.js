@@ -635,5 +635,15 @@ describe('namebase-types', () => {
       const parse = TYPED_DEFAULT(STRING, 0);
       expectException(() => parse(), 'InvalidType');
     });
+
+    it('should fail with a key in objects', () => {
+      const parse = OBJECT({ a: TYPED_DEFAULT(STRING, '') });
+      try {
+        parse({ a: 0 });
+      } catch (e) {
+        if (e.name !== 'InvalidType') throw e;
+        if (e.key !== 'a') throw e;
+      }
+    });
   });
 });
