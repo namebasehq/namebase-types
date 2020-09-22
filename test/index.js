@@ -661,17 +661,34 @@ describe('namebase-types', () => {
     it('should properly compose two types', () => {
       const TYPE_A = ENUM(1, 2, 3);
       const TYPE_B = INTEGER_STRING;
-      const COMPOSED_TYPE = compose(TYPE_A, TYPE_B);
+      const parse = compose(TYPE_A, TYPE_B);
 
-      const result1 = COMPOSED_TYPE('1');
+      const result1 = parse('1');
       assert(result1 === 1);
 
-      const result2 = COMPOSED_TYPE('2');
+      const result2 = parse('2');
       assert(result2 === 2);
 
-      expectException(() => COMPOSED_TYPE(null), 'InvalidType');
-      expectException(() => COMPOSED_TYPE(3), 'InvalidType');
-      expectException(() => COMPOSED_TYPE('4'), 'NotInEnum');
+      expectException(() => parse(null), 'InvalidType');
+      expectException(() => parse(3), 'InvalidType');
+      expectException(() => parse('4'), 'NotInEnum');
+    });
+
+    it('should propagate TYPED_DEFAULT correctly', () => {
+      const TYPE_A = ENUM(1, 2, 3);
+      const TYPE_B = TYPED_DEFAULT(INTEGER_STRING, '1');
+      const parse = OBJECT({ a: compose(TYPE_A, TYPE_B) });
+
+      const result1 = parse({ a: '2' });
+      assert(Object.keys(result1).length === 1);
+      assert(result1.a === 2);
+
+      const result2 = parse({});
+      assert(Object.keys(result2).length === 1);
+      assert(result2.a === 1);
+
+      expectException(() => parse({ a: 3 }), 'InvalidType', 'a');
+      expectException(() => parse({ a: '4' }), 'NotInEnum', 'a');
     });
   });
 });

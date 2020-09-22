@@ -170,9 +170,18 @@ function ARRAY(f) {
 }
 
 const compose = (f, g) => {
-  return function(...args) {
-    return f.call({ key: this.key }, g(...args));
+  const composition = function(...args) {
+    const context = { key: this.key };
+    const innerResult = g.call(context, ...args);
+    const outerResult = f.call(context, innerResult);
+    return outerResult;
   };
+
+  if (g.TYPED_DEFAULT) {
+    composition.TYPED_DEFAULT = true;
+  }
+
+  return composition;
 };
 
 function TYPED_DEFAULT(TYPE, defaultValue) {
