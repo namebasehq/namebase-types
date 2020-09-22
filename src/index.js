@@ -201,5 +201,6 @@ module.exports = {
   OR,
   STRING,
   TYPED_DEFAULT,
+  compose,
   exceptions,
 };

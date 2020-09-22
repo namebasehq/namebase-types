@@ -14,6 +14,7 @@ const {
   OR,
   STRING,
   TYPED_DEFAULT,
+  compose,
 } = require('../src/index');
 
 function expectException(f, exceptionName, key = null) {
@@ -644,6 +645,33 @@ describe('namebase-types', () => {
         if (e.name !== 'InvalidType') throw e;
         if (e.key !== 'a') throw e;
       }
+    });
+  });
+
+  describe('.compose(f, g)', () => {
+    it('should properly compose two simple functions', () => {
+      const addFive = x => x + 5;
+      const timesThree = x => x * 3;
+      const composition = compose(addFive, timesThree);
+      assert(composition(0) === 5);
+      assert(composition(1) === 8);
+      assert(composition(2) === 11);
+    });
+
+    it('should properly compose two types', () => {
+      const TYPE_A = ENUM(1, 2, 3);
+      const TYPE_B = INTEGER_STRING;
+      const COMPOSED_TYPE = compose(TYPE_A, TYPE_B);
+
+      const result1 = COMPOSED_TYPE('1');
+      assert(result1 === 1);
+
+      const result2 = COMPOSED_TYPE('2');
+      assert(result2 === 2);
+
+      expectException(() => COMPOSED_TYPE(null), 'InvalidType');
+      expectException(() => COMPOSED_TYPE(3), 'InvalidType');
+      expectException(() => COMPOSED_TYPE('4'), 'NotInEnum');
     });
   });
 });
